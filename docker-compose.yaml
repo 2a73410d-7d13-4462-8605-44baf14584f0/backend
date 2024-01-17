@@ -1,7 +1,25 @@
 version: '1'
 services:
-  nestjs:
-    build:
+  server:
+    build: 
       context: .
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
     ports:
-      -"8080:8080"
+      - 8080:8080
+    networks:
+      - short_url
+    depends_on:
+      - redis
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - 6379:6379
+      - 8001:8001
+    networks:
+      - short_url
+networks:
+  short_url:

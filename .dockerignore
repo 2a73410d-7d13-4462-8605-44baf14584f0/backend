@@ -1,0 +1,8 @@
+**/node_modules*
+**/Dockerfile*
+**/.vs
+**/.vscode
+**/.git
+**/dist
+LICENSE
+README.md

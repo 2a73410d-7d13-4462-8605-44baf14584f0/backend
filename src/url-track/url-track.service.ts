@@ -31,4 +31,20 @@ export class UrlTrackService {
       throw error;
     }
   }
+
+  async updateCounter(id: number) {
+    try {
+      const datas = await this.urlTrackRepository.findOne({
+        where: {
+          transformUrlId: id,
+        },
+      });
+      return await this.urlTrackRepository.save({
+        ...datas,
+        count: datas.count + 1,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }

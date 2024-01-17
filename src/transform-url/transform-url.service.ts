@@ -4,6 +4,7 @@ import { TransformUrl } from './transform-url.entity';
 import { Repository } from 'typeorm';
 import { GenerateShortUrl } from './transform-url.transaction';
 import { Redis } from 'ioredis';
+import { UrlTrackService } from 'src/url-track/url-track.service';
 
 @Injectable()
 export class TransformUrlService {
@@ -11,6 +12,7 @@ export class TransformUrlService {
     @InjectRepository(TransformUrl)
     private readonly transformUrlRepo: Repository<TransformUrl>,
     private readonly generateUrlTransaction: GenerateShortUrl,
+    private readonly trackUrlService: UrlTrackService,
   ) {}
 
   private readonly redis = new Redis({
@@ -72,6 +74,23 @@ export class TransformUrlService {
   }
 
   async getOriginalUrl(url: string): Promise<string> {
-    return await this.redis.get(url);
+    try {
+      return await this.redis.get(url);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateTracker(url: string) {
+    try {
+      const transform = await this.transformUrlRepo.findOne({
+        where: {
+          shortUrl: url,
+        },
+      });
+      return await this.trackUrlService.updateCounter(transform.id);
+    } catch (error) {
+      throw error;
+    }
   }
 }

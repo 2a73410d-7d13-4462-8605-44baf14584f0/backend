@@ -2,6 +2,7 @@ import { Controller, Get, Param, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { TransformUrlService } from './transform-url/transform-url.service';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller()
 export class AppController {
@@ -15,7 +16,8 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('short')
+  @Throttle({ default: { limit: 10, ttl: 10000 } })
+  @Get(':short')
   async redirectUrl(
     @Param('short') shortUrl: string,
     @Res() res: Response,
@@ -23,6 +25,7 @@ export class AppController {
     const original = await this.transformUrlService.getOriginalUrl(shortUrl);
 
     if (original) {
+      this.transformUrlService.updateTracker(shortUrl);
       res.redirect(301, original);
     } else {
       res.status(404).send('URL not found');

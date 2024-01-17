@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { TransformUrlService } from './transform-url.service';
 import { TransformUrl } from './transform-url.entity';
 
@@ -19,6 +19,15 @@ export class TransformUrlController {
   async generateUrl(@Body() body): Promise<TransformUrl> {
     try {
       return await this.transformUrlService.generateUrl(body);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('statistics')
+  async getWeeklyStatistics(@Query() { user }: { user: string }) {
+    try {
+      return await this.transformUrlService.userUsage(user);
     } catch (error) {
       throw error;
     }

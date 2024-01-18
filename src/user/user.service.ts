@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { generate } from 'short-uuid';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class UserService {
     }
   }
 
-  async createUser(name: string) {
+  async createUser(name: string): Promise<User> {
     try {
       if (!name) {
         name = `Guest:${generate()}`;
@@ -36,7 +36,7 @@ export class UserService {
   async getByName(name: string): Promise<User> {
     try {
       return await this.userRepository.findOne({
-        where: { name: Like(`%${name}%`) },
+        where: { name: name },
       });
     } catch (error) {
       throw error;

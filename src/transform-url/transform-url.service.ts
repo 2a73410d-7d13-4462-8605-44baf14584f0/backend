@@ -5,6 +5,16 @@ import { Repository } from 'typeorm';
 import { GenerateShortUrl } from './transform-url.transaction';
 import { Redis } from 'ioredis';
 import { UrlTrackService } from 'src/url-track/url-track.service';
+import { UrlTrack } from 'src/url-track/url-track.entity';
+import {
+  GenerateUrlDTO,
+  StatisticListDTO,
+  TransformUrlUserDTO,
+  UserUsageDTO,
+} from './dto/transform-url.service.dto';
+import { UserService } from 'src/user/user.service';
+import { User } from 'src/user/user.entity';
+import { TransformUrlDTO } from './dto/transform-url.dto';
 
 @Injectable()
 export class TransformUrlService {
@@ -13,6 +23,7 @@ export class TransformUrlService {
     private readonly transformUrlRepo: Repository<TransformUrl>,
     private readonly generateUrlTransaction: GenerateShortUrl,
     private readonly trackUrlService: UrlTrackService,
+    private readonly userService: UserService,
   ) {}
 
   private readonly redis = new Redis({
@@ -21,7 +32,7 @@ export class TransformUrlService {
     password: process.env.REDIS_PASSWORD,
   });
 
-  async getAll() {
+  async getAll(): Promise<TransformUrlDTO[]> {
     try {
       return await this.transformUrlRepo.find();
     } catch (error) {
@@ -29,7 +40,7 @@ export class TransformUrlService {
     }
   }
 
-  async getByShort(short: string) {
+  async getByShort(short: string): Promise<TransformUrl> {
     try {
       return await this.transformUrlRepo.findOne({
         where: {
@@ -44,7 +55,7 @@ export class TransformUrlService {
     }
   }
 
-  async generateUrl({ url, name }): Promise<TransformUrl> {
+  async generateUrl({ url, name }: GenerateUrlDTO): Promise<TransformUrl> {
     try {
       const createUrl = await this.generateUrlTransaction.run({ url, name });
       await this.redis.set(createUrl.shortUrl, url);
@@ -54,20 +65,46 @@ export class TransformUrlService {
     }
   }
 
-  async userUsage(name: string) {
+  async getAllByUser(id: number): Promise<TransformUrlUserDTO[]> {
     try {
       return await this.transformUrlRepo
         .createQueryBuilder('tu')
-        .select('COUNT(tu.short_url)', 'total_url')
-        .addSelect('SUM(ut.createdtime)', 'total_usage')
-        .addSelect('createdtime', 'date')
-        .innerJoin('tu.user', 'u')
+        .select('tu.original_url', 'original_url')
+        .addSelect('tu.short_url', 'short_url')
+        .addSelect('ut.count', 'count')
         .innerJoin('tu.urlTracker', 'ut')
-        .where(
-          'tu.createdtime between current_date - interval "7 days" and current_date',
-        )
-        .andWhere('u.name LIKE :name', { name })
+        .where('user_id = :id', { id })
         .getRawMany();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async userUsage(name: string): Promise<StatisticListDTO> {
+    try {
+      const getUser: User = await this.userService.getByName(name);
+
+      const listUser: TransformUrlUserDTO[] = await this.getAllByUser(
+        getUser.id,
+      );
+
+      const data: Promise<UserUsageDTO[]> = this.transformUrlRepo
+        .createQueryBuilder('tu')
+        .select('COUNT(tu.short_url)', 'total_url')
+        .addSelect('SUM(ut.count)', 'total_usage')
+        .addSelect("DATE_TRUNC('day', tu.createdtime)", 'date')
+        .innerJoin('tu.urlTracker', 'ut')
+        .where('user_id = :id', { id: getUser.id })
+        .andWhere("tu.createdtime >= CURRENT_DATE - INTERVAL '7 days'")
+        .groupBy('date')
+        .getRawMany();
+
+      const [list, statistics] = await Promise.all([listUser, data]);
+
+      return {
+        list,
+        statistics,
+      };
     } catch (error) {
       throw error;
     }
@@ -81,7 +118,7 @@ export class TransformUrlService {
     }
   }
 
-  async updateTracker(url: string) {
+  async updateTracker(url: string): Promise<UrlTrack> {
     try {
       const transform = await this.transformUrlRepo.findOne({
         where: {

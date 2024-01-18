@@ -1,23 +1,14 @@
 import { Controller, Get, Param, Res } from '@nestjs/common';
-import { AppService } from './app.service';
 import { Response } from 'express';
 import { TransformUrlService } from './transform-url/transform-url.service';
 import { Throttle } from '@nestjs/throttler';
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly transformUrlService: TransformUrlService,
-  ) {}
+  constructor(private readonly transformUrlService: TransformUrlService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
-
-  @Throttle({ default: { limit: 10, ttl: 10000 } })
-  @Get(':short')
+  @Throttle({ default: { limit: 10, ttl: 3000 } })
+  @Get('url/:short')
   async redirectUrl(
     @Param('short') shortUrl: string,
     @Res() res: Response,

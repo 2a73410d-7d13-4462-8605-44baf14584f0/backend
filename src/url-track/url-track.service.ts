@@ -10,7 +10,7 @@ export class UrlTrackService {
     private readonly urlTrackRepository: Repository<UrlTrack>,
   ) {}
 
-  async getAll() {
+  async getAll(): Promise<UrlTrack[]> {
     try {
       return await this.urlTrackRepository.find();
     } catch (error) {
@@ -32,7 +32,7 @@ export class UrlTrackService {
     }
   }
 
-  async updateCounter(id: number) {
+  async updateCounter(id: number): Promise<UrlTrack> {
     try {
       const datas = await this.urlTrackRepository.findOne({
         where: {
@@ -41,7 +41,7 @@ export class UrlTrackService {
       });
       return await this.urlTrackRepository.save({
         ...datas,
-        count: datas.count + 1,
+        count: datas?.count + 1,
       });
     } catch (error) {
       throw error;

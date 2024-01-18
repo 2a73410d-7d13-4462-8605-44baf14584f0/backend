@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransformUrlModule } from './transform-url/transform-url.module';
 import { UrlTrackModule } from './url-track/url-track.module';
@@ -22,6 +21,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}

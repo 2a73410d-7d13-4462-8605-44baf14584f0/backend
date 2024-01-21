@@ -4,8 +4,8 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { UrlTrackDTO } from './dto/url-track.dto';
 
@@ -13,12 +13,6 @@ import { UrlTrackDTO } from './dto/url-track.dto';
 export class UrlTrack extends AbstractEntity<UrlTrackDTO> {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @OneToOne(() => TransformUrl, (transformUrl) => transformUrl.id, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'transformUrlId' })
-  transformUrl: TransformUrl;
 
   @Column({ nullable: false })
   count: number;
@@ -28,4 +22,8 @@ export class UrlTrack extends AbstractEntity<UrlTrackDTO> {
 
   @Column({ type: 'timestamptz', default: 'NOW()' })
   updatedtime: Date;
+
+  @ManyToOne(() => TransformUrl, (transformUrl) => transformUrl.id)
+  @JoinColumn({ name: 'transformUrlId' })
+  transformUrl: TransformUrl;
 }

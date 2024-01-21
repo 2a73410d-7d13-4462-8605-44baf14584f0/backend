@@ -25,7 +25,6 @@ export class GenerateShortUrl extends BaseTransaction<
       const newUrl = generate();
 
       const user = await this.userService.getByName(name);
-
       if (!user)
         throw new HttpException("There's no user", HttpStatus.BAD_REQUEST);
 

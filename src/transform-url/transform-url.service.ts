@@ -7,6 +7,8 @@ import { Redis } from 'ioredis';
 import { UrlTrackService } from 'src/url-track/url-track.service';
 import { UrlTrack } from 'src/url-track/url-track.entity';
 import {
+  DetailShortBodyDTO,
+  DetailShortResponseDTO,
   GenerateUrlDTO,
   StatisticListDTO,
   TransformUrlUserDTO,
@@ -34,7 +36,13 @@ export class TransformUrlService {
 
   async getAll(): Promise<TransformUrlDTO[]> {
     try {
-      return await this.transformUrlRepo.find();
+      const data = await this.trackUrlService.getAll();
+      console.log(data);
+      return await this.transformUrlRepo.find({
+        relations: {
+          user: true,
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -45,9 +53,6 @@ export class TransformUrlService {
       return await this.transformUrlRepo.findOne({
         where: {
           shortUrl: short,
-        },
-        relations: {
-          urlTracker: true,
         },
       });
     } catch (error) {
@@ -126,6 +131,30 @@ export class TransformUrlService {
         },
       });
       return await this.trackUrlService.updateCounter(transform.id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async detailShort({
+    short,
+  }: DetailShortBodyDTO): Promise<DetailShortResponseDTO> {
+    try {
+      const detail = await this.getByShort(short);
+      const list = await this.transformUrlRepo
+        .createQueryBuilder('tu')
+        .select('SUM(count)', 'total_usage')
+        .addSelect('tu.createdtime', 'date')
+        .innerJoin('tu.urlTracker', 'ut')
+        .where('tu.user_id = :id', { id: detail.userId })
+        .andWhere('tu.short_url = :short', { short })
+        .groupBy('date')
+        .getRawMany();
+
+      return {
+        ...detail,
+        statistics: list,
+      };
     } catch (error) {
       throw error;
     }

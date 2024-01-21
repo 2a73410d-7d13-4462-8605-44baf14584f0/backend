@@ -18,7 +18,7 @@ export class TrackUrl1705159651882 implements MigrationInterface {
             generationStrategy: 'increment',
           },
           {
-            name: 'id_url',
+            name: 'transformUrlId',
             type: 'integer',
           },
           {
@@ -44,12 +44,13 @@ export class TrackUrl1705159651882 implements MigrationInterface {
           },
         ],
       }),
+      true,
     );
     await queryRunner.createForeignKeys('url_track', [
       new TableForeignKey({
-        columnNames: ['id_url'],
-        referencedColumnNames: ['id'],
+        columnNames: ['transformUrlId'],
         referencedTableName: 'transform_url',
+        referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       }),

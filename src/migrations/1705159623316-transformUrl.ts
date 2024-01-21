@@ -47,6 +47,7 @@ export class TransformUrl1705159623316 implements MigrationInterface {
           },
         ],
       }),
+      true,
     );
     await queryRunner.createForeignKeys('transform_url', [
       new TableForeignKey({

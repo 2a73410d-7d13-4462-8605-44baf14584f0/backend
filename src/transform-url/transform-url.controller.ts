@@ -1,7 +1,8 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { TransformUrlService } from './transform-url.service';
-import { TransformUrl } from './transform-url.entity';
 import {
+  DetailShortBodyDTO,
+  DetailShortResponseDTO,
   GenerateUrlDTO,
   StatisticListDTO,
 } from './dto/transform-url.service.dto';
@@ -24,8 +25,8 @@ export class TransformUrlController {
   }
 
   @Post()
-  @ApiOkResponse({ type: TransformUrl })
-  async generateUrl(@Body() body: GenerateUrlDTO): Promise<TransformUrl> {
+  @ApiOkResponse({ type: TransformUrlDTO })
+  async generateUrl(@Body() body: GenerateUrlDTO): Promise<TransformUrlDTO> {
     try {
       return await this.transformUrlService.generateUrl(body);
     } catch (error) {
@@ -40,6 +41,18 @@ export class TransformUrlController {
   ): Promise<StatisticListDTO> {
     try {
       return await this.transformUrlService.userUsage(user);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('detail')
+  @ApiOkResponse({ type: DetailShortResponseDTO })
+  async getDetailShort(
+    @Query() { short }: DetailShortBodyDTO,
+  ): Promise<DetailShortResponseDTO> {
+    try {
+      return await this.transformUrlService.detailShort({ short });
     } catch (error) {
       throw error;
     }

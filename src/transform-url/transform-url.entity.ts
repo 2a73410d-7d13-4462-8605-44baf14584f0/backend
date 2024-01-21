@@ -5,8 +5,8 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { TransformUrlDTO } from './dto/transform-url.dto';
 import { UrlTrack } from 'src/url-track/url-track.entity';
@@ -26,9 +26,9 @@ export class TransformUrl extends AbstractEntity<TransformUrlDTO> {
   userId: number;
 
   @ManyToOne(() => User, (user) => user.id)
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToOne(() => UrlTrack, (tracker) => tracker.transformUrlId)
-  @JoinColumn({ name: 'id' })
-  urlTracker: UrlTrack;
+  @OneToMany(() => UrlTrack, (tracker) => tracker.transformUrl)
+  urlTracker: UrlTrack[];
 }

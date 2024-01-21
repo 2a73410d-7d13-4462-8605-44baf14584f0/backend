@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsDate, IsNumber, IsString } from 'class-validator';
 
 export class GenerateUrlDTO {
   @ApiProperty()
@@ -59,10 +59,53 @@ export class StatisticListDTO {
     {
       "total_url": "0",
       "total_usage": "0",
-      "date":"${new Date()}"
+      "date":"2024-01-21T06:52:10.853Z"
     }
   ]
   `,
   })
   statistics: UserUsageDTO[];
+}
+
+export class StatisticsShortDTO {
+  @ApiProperty()
+  @IsNumber()
+  total_usage: number;
+
+  @ApiProperty()
+  @IsDate()
+  date: Date;
+}
+
+export class DetailShortResponseDTO {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  originalUrl: string;
+
+  @ApiProperty()
+  shortUrl: string;
+
+  @ApiProperty()
+  userId: number;
+
+  @ApiProperty({
+    example: `
+    [
+      {
+        "date": "2024-01-21T06:52:10.853Z",
+        "total_usage": 0
+      }
+    ]
+    `,
+  })
+  @IsArray()
+  statistics: StatisticsShortDTO[];
+}
+
+export class DetailShortBodyDTO {
+  @ApiProperty()
+  @IsString()
+  short: string;
 }

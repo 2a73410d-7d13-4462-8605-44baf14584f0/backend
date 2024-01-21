@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { generate } from 'short-uuid';
+import { UserDTO } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -19,7 +20,7 @@ export class UserService {
     }
   }
 
-  async createUser(name: string): Promise<User> {
+  async createUser(name: string): Promise<UserDTO> {
     try {
       if (!name) {
         name = `Guest:${generate()}`;
@@ -35,6 +36,8 @@ export class UserService {
 
   async getByName(name: string): Promise<User> {
     try {
+      if (!name)
+        throw new HttpException('No User Available', HttpStatus.BAD_REQUEST);
       return await this.userRepository.findOne({
         where: { name: name },
       });

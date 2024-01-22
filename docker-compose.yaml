@@ -28,8 +28,8 @@ services:
     build: 
       context: ../frontend
       dockerfile: Dockerfile
-    expose:
-      - 3000
+    ports:
+      - "3000:3000"
     env_file:
       - ../frontend/.env
     container_name: frontend-short-url

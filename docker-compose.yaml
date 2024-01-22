@@ -24,6 +24,19 @@ services:
       - short_url
     container_name: redis
 
+  frontend:
+    build: 
+      context: ../frontend
+      dockerfile: Dockerfile
+    expose:
+      - 3000
+    env_file:
+      - ../frontend/.env
+    container_name: frontend-short-url
+    depends_on:
+      - server
+    networks:
+      - short_url
   db:
     image: postgres:15
     environment:
@@ -32,9 +45,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       PGDATA: /data/postgres
     volumes:
-      -postgres:data/postgres
+      - postgres:/data/postgres
     ports:
-      -"5432:5432"
+      - "5432:5432"
     networks:
       - short_url
     container_name: dbShortUrl
@@ -45,14 +58,7 @@ services:
       retries: 5
     restart: unless-stopped
 
-  frontend:
-    expose:
-      - 3000
-    environment:
-      - baserUrl: ${baserUrl:-server:8080/}
-    container_name: frontend-short-url
-    networks:
-      - short_url
-
+volumes:
+  postgres:
 networks:
   short_url:
